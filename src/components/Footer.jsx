@@ -1,4 +1,5 @@
 import { Icon } from "@iconify/react";
+import logo from "../assets/logo/logo.png";
 
 export default function Footer() {
   return (
@@ -8,7 +9,7 @@ export default function Footer() {
         {/* Logo et nom */}
         <div className="flex items-center gap-2">
           <img 
-            src="/src/assets/logo/logo.png" 
+            src={logo} 
             alt="INSTI Events Logo" 
             className="w-8 h-8 object-contain"
           />

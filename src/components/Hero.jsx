@@ -1,22 +1,25 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+ import carroussel1 from "../assets/images/carroussel1.png";
+ import carroussel2 from "../assets/images/carroussel2.png";
+
 
 const slides = [
   {
-    image: "/src/assets/images/carroussel1.png",
+    image: carroussel1,
     title: "REVIVEZ LES MOMENTS FORTS DE L'INSTI"
   },
   {
-    image: "/src/assets/images/carroussel2.png",
+    image: carroussel2,
     title: "CAPTUREZ CHAQUE INSTANT MAGIQUE"
   },
   {
-    image: "/src/assets/images/carroussel1.png",
+    image: carroussel1,
     title: "PARTAGEZ VOS PLUS BEAUX SOUVENIRS"
   },
   {
-    image: "/src/assets/images/carroussel2.png",
+    image: carroussel2,
     title: "DECOUVREZ LES EVENEMENTS INSTI"
   }
 ];

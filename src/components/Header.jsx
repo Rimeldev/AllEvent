@@ -1,5 +1,6 @@
 import React from "react";
 import { Ticket } from "lucide-react";
+import logo from "../assets/logo/logo.png";
 
 export default function Header() {
   return (
@@ -9,7 +10,7 @@ export default function Header() {
         {/* Logo + Titre */}
         <div className="flex items-center gap-2 sm:gap-3">
           <img
-            src="/src/assets/logo/logo.png"
+             src={logo} 
             alt="Logo INSTI"
             className="h-8 w-8 sm:h-10 sm:w-10 object-contain"
           />

@@ -3,11 +3,13 @@ import Hero from "./Hero.jsx";
 import { Search, Ticket } from "lucide-react";
 import { Icon } from "@iconify/react";
 import { useNavigate } from "react-router-dom";
+ import event1 from "../assets/images/event1.png";
+ import event2 from "../assets/images/event2.png";
 
 const events = [
   {
     id: 1,
-    image: "/src/assets/images/event1.png",
+    image: event1,
     badge: " Concert",
     title: "YANO BABY",
     subtitle: "TOUS ENSEMBLE AU PALAIS DES CONGRÈS DE LOMÉ",
@@ -20,7 +22,7 @@ const events = [
   },
   {
     id: 2,
-    image: "/src/assets/images/event2.png",
+    image: event2,
     badge: " Concert",
     title: "MAMA BABY",
     subtitle: "CONCERT LIVE",
@@ -33,7 +35,7 @@ const events = [
   },
   {
     id: 3,
-    image: "/src/assets/images/event1.png",
+    image: event1,
     badge: "Cala",
     title: "YANO BABY",
     subtitle: "TOUS ENSEMBLE AU PALAIS DES CONGRÈS DE LOMÉ",
@@ -46,7 +48,7 @@ const events = [
   },
   {
     id: 4,
-    image: "/src/assets/images/event2.png",
+     image: event2,
     badge: "Gala",
     title: "YANO BABY",
     subtitle: "TOUS ENSEMBLE AU PALAIS DES CONGRÈS DE LOMÉ",
@@ -59,7 +61,7 @@ const events = [
   },
     {
     id: 5,
-    image: "/src/assets/images/event1.png",
+     image: event1,
     badge: "ALERTE!",
     title: "YANO BABY",
     subtitle: "TOUS ENSEMBLE AU PALAIS DES CONGRÈS DE LOMÉ",
@@ -72,7 +74,7 @@ const events = [
   },
   {
     id: 6,
-    image: "/src/assets/images/event2.png",
+     image: event2,
     badge: " Concert",
     title: "MAMA BABY",
     subtitle: "CONCERT LIVE",
@@ -85,7 +87,7 @@ const events = [
   },
   {
     id: 7,
-    image: "/src/assets/images/event1.png",
+     image: event1,
     badge: "Gala",
     title: "YANO BABY",
     subtitle: "TOUS ENSEMBLE AU PALAIS DES CONGRÈS DE LOMÉ",
