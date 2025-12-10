@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+/* ------------------------------  
+   🎯 Variables globales : thème
+--------------------------------*/
+@theme {
+  --font-primary: 'Raleway', sans-serif;
+  --font-display: 'Nico Moji', sans-serif;
+  --font-alt: 'Font 2', sans-serif;
+
+  --gradient-main: linear-gradient(90deg, #D54400 0%, #646EF6 100%);
+  --gradient-hover: linear-gradient(90deg, #B83800 0%, #4F5AD4 100%);
+  --color-start: #D54400;
+  --color-end: #646EF6;
+  --text-color: #0A0A0A;
+  --text-light: #F5F5F5;
+  --bg-light: #FFFFFF;
+  --bg-dark: #0D0D0D;
+}
+
+/* ------------------------------  
+   🔤 Font-face
+--------------------------------*/
+@font-face {
+  font-family: 'Nico Moji';
+  src: url('/fonts/NicoMoji-Regular.ttf') format('truetype');
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'Font 2';
+  src: url('/fonts/Font2.ttf') format('truetype');
+  font-weight: normal;
+}
+
+/* ------------------------------  
+   ✨ Styles globaux
+--------------------------------*/
+html, body {
+  @apply p-0 m-0 overflow-x-hidden;
+  font-family: var(--font-primary);
+  background: var(--bg-light);
+  color: var(--text-color);
+}
+
+/* ------------------------------  
+   🧑‍🎨 Classes utilitaires
+--------------------------------*/
+.title-gradient {
+  background: var(--gradient-main);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bg-main-gradient {
+  background: var(--gradient-main);
+}
+
+.btn-gradient:hover {
+  background: var(--gradient-hover);
+}
+
+.glass {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
