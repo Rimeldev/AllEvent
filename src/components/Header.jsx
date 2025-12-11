@@ -11,11 +11,11 @@ export default function Header() {
         <div className="flex items-center gap-2 sm:gap-3">
           <img
              src={logo} 
-            alt="Logo INSTI"
+            alt="Logo EPAC"
             className="h-8 w-8 sm:h-10 sm:w-10 object-contain"
           />
           <h1 className="font-display text-white font-medium text-lg sm:text-xl md:text-2xl tracking-wider uppercase">
-            INSTI Events
+            EPAC Events
           </h1>
         </div>
 

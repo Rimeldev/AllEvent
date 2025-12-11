@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Plus, Minus, Trash2, Check } from 'lucide-react';
+import InfoGrid from './InfoGrid.jsx';
 
 export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, tickets }) {
   const [currentStep, setCurrentStep] = useState(1);
@@ -248,30 +249,16 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
             </div>
 
             {/* Champs d'information */}
-            <div className="space-y-3 max-w-md mx-auto">
-              <div>
-                <label className="text-xs text-gray-500 font-medium block mb-1 ml-1">
-                  📧 Email
-                </label>
-                <input
-                  type="text"
-                  value={confirmationData.email}
-                  readOnly
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-700 font-medium"
-                />
-              </div>
+            <div className="space-y-3 max-w-2xl mx-auto">
+              <InfoGrid
+  data={{
+    name: "LOKO loko",
+    email: "votre.email@example.com",
+    date: "5 décembre 2025",
+    payment: "MTN",
+  }}
+/>
 
-              <div>
-                <label className="text-xs text-gray-500 font-medium block mb-1 ml-1">
-                  📱 Numéro
-                </label>
-                <input
-                  type="text"
-                  value={confirmationData.phone}
-                  readOnly
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-700 font-medium"
-                />
-              </div>
             </div>
 
             {/* Boutons d'action */}
@@ -294,7 +281,9 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
             {/* Note de remboursement */}
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 max-w-md mx-auto mt-6">
               <p className="text-xs text-gray-700 leading-relaxed">
-                <span className="font-bold">💡 Important :</span> Possibilité de QR code à l'entrée de l'événement. Le QR code doit être scanifiable sur votre écran de téléphone sinon l'accès vous sera refusé.
+                <span className="font-bold">💡 Important :</span> Présentez ce QR code à l'entrée de l'événement
+Un ticket = une personne
+Le QR code a été envoyé par email avec un code de vérification pour retrouver votre ticket
               </p>
             </div>
           </div>
@@ -334,7 +323,7 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
 
           <div className="w-full flex justify-center font-medium text-2xl mb-4">{eventTitle}</div>
           <h2 className='font-bold text-2xl md:text-3xl text-center mb-2'>
-Firthy Chill INSTI</h2>
+Firthy Chill EPAC</h2>
           <p className="text-sm text-gray-600 font-medium text-center mb-6">
             Réservez en quelques minutes, paiement 100% sécurisé
           </p>

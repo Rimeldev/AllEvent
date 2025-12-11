@@ -10,10 +10,10 @@ export default function Footer() {
         <div className="flex items-center gap-2">
           <img 
             src={logo} 
-            alt="INSTI Events Logo" 
+            alt="EPAC Events Logo" 
             className="w-8 h-8 object-contain"
           />
-          <span className=" font-display text-lg">INSTI EVENTS</span>
+          <span className=" font-display text-lg">EPAC EVENTS</span>
         </div>
 
         {/* Copyright */}

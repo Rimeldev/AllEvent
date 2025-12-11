@@ -11,12 +11,12 @@ export default function DetailEvent() {
   const event = {
     image: eventImage,
     badge: "Concert",
-    title: "Firthy Chill INSTI",
+    title: "Firthy Chill EPAC",
     description:
-      "Le Firthy Chill INSTI arrive enfin à Cotonou pour une expérience inoubliable ! Rendez-vous dans le plus grand amphithéâtre de l'INSTI, au cœur de l'Université d'Abomey-Calavi. Préparez-vous à quatre soirées offertes par de la bonne ambiance.re de l'INSTI, au cœur de l'Université d'Abomey-Calavi. Préparez-vous à quatre soirées offertes par de la bonne ambiance.",
+      "Le Firthy Chill EPAC arrive enfin à Cotonou pour une expérience inoubliable ! Rendez-vous dans le plus grand amphithéâtre de l'EPAC, au cœur de l'Université d'Abomey-Calavi. Préparez-vous à quatre soirées offertes par de la bonne ambiance.re de l'EPAC, au cœur de l'Université d'Abomey-Calavi. Préparez-vous à quatre soirées offertes par de la bonne ambiance.",
     date: "dim. 7 déc. 2025 | après-midi",
     location: "Cotonou, Bénin",
-    organizer: "Amiphie Music, INSTI, UAC",
+    organizer: "Amiphie Music, EPAC, UAC",
   };
 
   useEffect(() => {

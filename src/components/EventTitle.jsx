@@ -6,10 +6,10 @@ export default function EventTitle() {
   <div className="flex items-center gap-2 mx-auto">
           <img 
             src={logo} 
-            alt="INSTI Events Logo" 
+            alt="EPAC Events Logo" 
             className="w-8 h-8 object-contain"
           />
-          <span className=" font-display text-xl">INSTI</span>
+          <span className=" font-display text-xl">EPAC</span>
         </div>
   )
 }

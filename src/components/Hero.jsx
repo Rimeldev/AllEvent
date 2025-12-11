@@ -20,7 +20,7 @@ const slides = [
   },
   {
     image: carroussel2,
-    title: "DECOUVREZ LES EVENEMENTS INSTI"
+    title: "DECOUVREZ LES EVENEMENTS EPAC"
   }
 ];
 
