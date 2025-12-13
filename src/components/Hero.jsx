@@ -3,24 +3,40 @@ import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
  import carroussel1 from "../assets/images/carroussel1.png";
  import carroussel2 from "../assets/images/carroussel2.png";
+ import carroussel3 from "../assets/images/carroussel3.png";
+ import carroussel4 from "../assets/images/carroussel4.png";
+ import carroussel5 from "../assets/images/carroussel5.png";
+ import carroussel6 from "../assets/images/carroussel6.png";
+
+
+
+
 
 
 const slides = [
   {
     image: carroussel1,
-    title: "REVIVEZ LES MOMENTS FORTS DE L'INSTI"
+    title: "REVIVEZ LES MOMENTS FORTS DE L'EPAC"
   },
   {
     image: carroussel2,
     title: "CAPTUREZ CHAQUE INSTANT MAGIQUE"
   },
   {
-    image: carroussel1,
+    image: carroussel3,
     title: "PARTAGEZ VOS PLUS BEAUX SOUVENIRS"
   },
   {
-    image: carroussel2,
+    image: carroussel4,
     title: "DECOUVREZ LES EVENEMENTS EPAC"
+  },
+   {
+    image: carroussel5,
+    title: "DECOUVREZ LES EVENEMENTS EPAC"
+  },
+   {
+    image: carroussel6,
+    title: "PARTAGEZ VOS PLUS BEAUX SOUVENIRS"
   }
 ];
 

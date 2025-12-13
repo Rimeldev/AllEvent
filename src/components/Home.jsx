@@ -221,7 +221,7 @@ export default function Home() {
           className="flex items-center mx-auto gap-2 bg-[#E95503] text-white px-4 py-2 rounded-xl font-primary font-medium  hover:scale-105 transition-all"
         >
           <Ticket size={18} />
-          <span>Mes Tickets</span>
+          <span onClick={() => navigate("/tickets")}>Mes Tickets</span>
         </button>
 
    </div>
