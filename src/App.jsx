@@ -14,6 +14,7 @@ import CreateEvent from './components/BackOffice/CreateEvent.jsx';
 import StatisticPages from './components/BackOffice/StatisticPages.jsx';
 import ForgotPassword from './components/BackOffice/ForgotPassword.jsx';
 import SetPassword from './components/BackOffice/SetPassword.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 
 
@@ -26,18 +27,36 @@ function App() {
       <Toaster position="bottom-right" />
      <Header />
      <Routes>
-
- <Route path="/" element={<Home />} />          
-  <Route path="/event/:eventId" element={<DetailEvent />} />
-  <Route path="/tickets" element={<TicketSearch />} />
-  <Route path="/login" element={<Login />} />
-  <Route path="/Checkaccount" element={<Checkaccount />} />
-  <Route path="/dashboard" element={<Dashboard />} />
-  <Route path="/statistics/:eventId" element={<StatisticPages />} />
-  <Route path="/edit-event/:id" element={<EditEvent />} />
-  <Route path="/create-event" element={<CreateEvent />} />
-  <Route path="/forgot-password" element={<ForgotPassword />} />
-  <Route path="/set-password" element={<SetPassword />} />
+<Route path="/" element={<Home />} />          
+        <Route path="/event/:eventId" element={<DetailEvent />} />
+        <Route path="/tickets" element={<TicketSearch />} />
+        <Route path="/login" element={<Login />} />
+        
+        {/* Routes protégées */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/statistics/:eventId" element={
+          <ProtectedRoute>
+            <StatisticPages />
+          </ProtectedRoute>
+        } />
+        <Route path="/edit-event/:id" element={
+          <ProtectedRoute>
+            <EditEvent />
+          </ProtectedRoute>
+        } />
+        <Route path="/create-event" element={
+          <ProtectedRoute>
+            <CreateEvent />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/set-password" element={<SetPassword />} />
+          <Route path="/Checkaccount" element={<Checkaccount />} />
 
       
      </Routes>
