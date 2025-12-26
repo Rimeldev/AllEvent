@@ -1,8 +1,54 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import EventTitle from '../EventTitle.jsx';
+import { loginRequest } from "../../services/authService";
+import { toast } from "react-hot-toast";
+import { useNavigate, Link } from "react-router-dom";
+
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+
+      const res = await loginRequest(email, password);
+
+      // => si l'API retourne access_token
+      if (res?.access_token) {
+
+        localStorage.setItem("token", res.access_token);
+
+        toast.success("Connexion réussie !");
+        
+        navigate("/dashboard");
+
+        return; // IMPORTANT
+      }
+
+      // => pas de token = première connexion = étape suivante
+      toast("Bienvenue ! Veuillez compléter votre première connexion");
+
+     sessionStorage.setItem("auth_email", email);
+
+navigate("/Checkaccount", {
+  state: { email }
+});
+
+    } catch (err) {
+
+      toast.error("Identifiants incorrects");
+    }
+    finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4">
@@ -19,12 +65,14 @@ export default function Login() {
         </h1>
 
         {/* Formulaire */}
-        <form className="space-y-4 text-left">
+        <form onSubmit={handleLogin} className="space-y-4 text-left">
 
           {/* Email */}
           <input
             type="email"
             placeholder="Email"
+             value={email}
+        onChange={e => setEmail(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg 
               bg-gray-100 focus:ring-2 focus:ring-orange-500 text-sm outline-none"
           />
@@ -34,6 +82,8 @@ export default function Login() {
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Mot de passe"
+               value={password}
+        onChange={e => setPassword(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg 
                 bg-gray-100 focus:ring-2 focus:ring-orange-500 text-sm outline-none"
             />
@@ -54,9 +104,9 @@ export default function Login() {
               <span className="text-gray-700">Se souvenir de moi</span>
             </label>
 
-            <a href="#" className="text-blue-600 hover:underline">
+            <Link href="/forgot-password" className="text-blue-600 hover:underline">
               Mot de passe oublié
-            </a>
+            </Link  >
           </div>
 
           {/* Bouton */}
@@ -64,8 +114,9 @@ export default function Login() {
             type="submit"
             className="w-full py-3 mt-4 text-white font-semibold rounded-lg 
             bg-main-gradient btn-gradient"
+            disabled={loading}
           >
-            Se connecter
+           { loading ? "Connexion..." : "Se connecter"}
           </button>
         </form>
 

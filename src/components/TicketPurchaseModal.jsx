@@ -7,11 +7,21 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
   const [selectedTickets, setSelectedTickets] = useState([]);
 
   const handleBack = () => {
-  if (currentStep > 1) {
-    setCurrentStep(currentStep - 1);
-  }
-};
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
 
+  // Fonction utilitaire pour obtenir le prix en nombre
+  const getTicketPrice = (ticket) => {
+    if (typeof ticket.price === 'number') {
+      return ticket.price;
+    }
+    if (typeof ticket.price === 'string') {
+      return parseInt(ticket.price.replace(/\s/g, ''));
+    }
+    return 0;
+  };
 
   // Données statiques pour l'étape 4 (en attendant l'API)
   const confirmationData = {
@@ -33,16 +43,18 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
     const ticket = tickets.find(t => t.id === ticketId);
     const existing = selectedTickets.find(t => t.id === ticketId);
     
+    const maxRemaining = ticket.remaining_places || ticket.remaining || 0;
+    
     if (existing) {
       const newQuantity = existing.quantity + change;
       if (newQuantity <= 0) {
         setSelectedTickets(selectedTickets.filter(t => t.id !== ticketId));
-      } else if (newQuantity <= ticket.remaining) {
+      } else if (newQuantity <= maxRemaining) {
         setSelectedTickets(selectedTickets.map(t =>
           t.id === ticketId ? { ...t, quantity: newQuantity } : t
         ));
       }
-    } else if (change > 0 && ticket.remaining > 0) {
+    } else if (change > 0 && maxRemaining > 0) {
       setSelectedTickets([...selectedTickets, { ...ticket, quantity: 1 }]);
     }
   };
@@ -53,7 +65,7 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
 
   const getTotalPrice = () => {
     return selectedTickets.reduce((total, ticket) => {
-      const price = parseInt(ticket.price.replace(/\s/g, ''));
+      const price = getTicketPrice(ticket);
       return total + (price * ticket.quantity);
     }, 0);
   };
@@ -83,14 +95,17 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {tickets.map((ticket) => {
                 const quantity = getTicketQuantity(ticket.id);
-                const priceValue = parseInt(ticket.price.replace(/\s/g, ''));
+                const priceValue = getTicketPrice(ticket);
+                const maxRemaining = ticket.remaining_places || ticket.remaining || 0;
                 
                 return (
                   <div
                     key={ticket.id}
                     className="rounded-xl p-5 text-center transition-all shadow-xl border-3 border-gray-200 hover:bg-gray-100 bg-white"
                   >
-                    <h3 className="font-bold text-black text-lg mb-2">{ticket.type}</h3>
+                    <h3 className="font-bold text-black text-lg mb-2">
+                      {ticket.label || ticket.type}
+                    </h3>
                     <p className="text-2xl font-bold text-black mb-4">
                       {priceValue.toLocaleString()} <span className="text-base font-semibold">FCFA</span>
                     </p>
@@ -108,7 +123,7 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
                       
                       <button
                         onClick={() => handleQuantityChange(ticket.id, 1)}
-                        disabled={quantity >= ticket.remaining}
+                        disabled={quantity >= maxRemaining}
                         className="w-9 h-9 rounded-full border-2 border-[#E95503] text-[#E95503] flex items-center justify-center hover:bg-[#E95503] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                       >
                         <Plus className="w-5 h-5" />
@@ -120,19 +135,15 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
             </div>
 
             {/* Bouton d'ajout au panier */}
-
             <div className="flex justify-center">
-
-          
-<button
-              onClick={handleContinue}
-              disabled={selectedTickets.length === 0}
-              className="px-10 sm:px-16 md:px-20 mx-auto bg-main-gradient btn-gradient text-white font-bold text-lg py-3 rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
-            >
-              Ajouter au panier - {getTotalPrice().toLocaleString()} FCFA
-            </button>
-          
-          </div>   
+              <button
+                onClick={handleContinue}
+                disabled={selectedTickets.length === 0}
+                className="px-10 sm:px-16 md:px-20 mx-auto bg-main-gradient btn-gradient text-white font-bold text-lg py-3 rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+              >
+                Ajouter au panier - {getTotalPrice().toLocaleString()} FCFA
+              </button>
+            </div>   
           </div>
         );
 
@@ -141,13 +152,16 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
           <div className="space-y-4">
             {/* Liste des tickets sélectionnés */}
             {selectedTickets.map((ticket) => {
-              const priceValue = parseInt(ticket.price.replace(/\s/g, ''));
+              const priceValue = getTicketPrice(ticket);
+              const maxRemaining = ticket.remaining_places || ticket.remaining || 0;
               
               return (
                 <div key={ticket.id} className="bg-white border-2 border-gray-200 rounded-xl p-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h3 className="font-bold text-gray-900 text-lg">{ticket.type}</h3>
+                      <h3 className="font-bold text-gray-900 text-lg">
+                        {ticket.label || ticket.type}
+                      </h3>
                       <p className="text-xl font-bold text-gray-800 mt-1">
                         {priceValue.toLocaleString()} <span className="text-sm">FCFA</span>
                       </p>
@@ -165,7 +179,7 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
                       
                       <button
                         onClick={() => handleQuantityChange(ticket.id, 1)}
-                        disabled={ticket.quantity >= ticket.remaining}
+                        disabled={ticket.quantity >= maxRemaining}
                         className="w-8 h-8 rounded-full border-2 border-[#E95503] text-[#E95503] flex items-center justify-center hover:bg-[#E95503] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                       >
                         <Plus className="w-4 h-4" />
@@ -194,16 +208,14 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
             </div>
 
             {/* Bouton continuer */}
-               <div className="flex justify-center">
-
-               
-            <button
-              onClick={handleContinue}
-              disabled={getTotalPrice() === 0}
-              className="px-20 mx-auto btn-gradient bg-main-gradient text-white font-bold text-lg py-3 rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
-            >
-              Continuer
-            </button>
+            <div className="flex justify-center">
+              <button
+                onClick={handleContinue}
+                disabled={getTotalPrice() === 0}
+                className="px-20 mx-auto btn-gradient bg-main-gradient text-white font-bold text-lg py-3 rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+              >
+                Continuer
+              </button>
             </div>
           </div>
         );
@@ -214,13 +226,13 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
             <p className="text-gray-600 mb-8 text-lg">
               Vous allez être redirigé vers la page de paiement sécurisée
             </p>
-               <div className="flex justify-center">
-            <button
-              onClick={handleContinue}
-              className="px-20 mx-auto bg-main-gradient text-white font-bold text-lg py-3 rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
-            >
-              Payer maintenant - {getTotalPrice().toLocaleString()}FCFA
-            </button>
+            <div className="flex justify-center">
+              <button
+                onClick={handleContinue}
+                className="px-20 mx-auto bg-main-gradient text-white font-bold text-lg py-3 rounded-full disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+              >
+                Payer maintenant - {getTotalPrice().toLocaleString()} FCFA
+              </button>
             </div>
           </div>
         );
@@ -234,8 +246,7 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
                 <img
                   src={confirmationData.qrCode}
                   alt="QR Code"
-                 className="w-40 h-40 sm:w-48 sm:h-48"
-
+                  className="w-40 h-40 sm:w-48 sm:h-48"
                 />
               </div>
             </div>
@@ -251,28 +262,27 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
             {/* Champs d'information */}
             <div className="space-y-3 max-w-2xl mx-auto">
               <InfoGrid
-  data={{
-    name: "LOKO loko",
-    email: "votre.email@example.com",
-    date: "5 décembre 2025",
-    payment: "MTN",
-  }}
-/>
-
+                data={{
+                  name: "LOKO loko",
+                  email: "votre.email@example.com",
+                  date: "5 décembre 2025",
+                  payment: "MTN",
+                }}
+              />
             </div>
 
             {/* Boutons d'action */}
             <div className="space-y-3 max-w-md mx-auto pt-4">
               <button
                 onClick={handleDownloadQR}
-                className="w-full btn-gradient  bg-main-gradient text-white font-bold text-base py-3.5 rounded-full transition-all shadow-lg"
+                className="w-full btn-gradient bg-main-gradient text-white font-bold text-base py-3.5 rounded-full transition-all shadow-lg"
               >
                 Télécharger le QR Code
               </button>
               
               <button
                 onClick={handleBackToHome}
-                className="w-full bg-white border-2  border-gray-300 hover:bg-gray-50 text-gray-700 font-bold text-base py-3.5 rounded-full transition-all"
+                className="w-full bg-white border-2 border-gray-300 hover:bg-gray-50 text-gray-700 font-bold text-base py-3.5 rounded-full transition-all"
               >
                 Retour à l'accueil
               </button>
@@ -282,8 +292,8 @@ export default function TicketPurchaseModal({ isOpen, onClose, eventTitle, ticke
             <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 max-w-md mx-auto mt-6">
               <p className="text-xs text-gray-700 leading-relaxed">
                 <span className="font-bold">💡 Important :</span> Présentez ce QR code à l'entrée de l'événement
-Un ticket = une personne
-Le QR code a été envoyé par email avec un code de vérification pour retrouver votre ticket
+                Un ticket = une personne
+                Le QR code a été envoyé par email avec un code de vérification pour retrouver votre ticket
               </p>
             </div>
           </div>
@@ -296,23 +306,22 @@ Le QR code a été envoyé par email avec un code de vérification pour retrouve
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div className="bg-white rounded-2xl w-full max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl mx-2 md:mx-0">
+      <div className="bg-white rounded-2xl w-full max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl mx-2 md:mx-0">
 
         {/* Header */}
         <div className="sticky top-0 bg-white px-6 py-4 rounded-t-2xl z-10">
               
           <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
             <div className="flex items-center gap-2">
-         {currentStep > 1 && (
-      <button
-        onClick={handleBack}
-        className="text-gray-700 hover:text-black font-medium flex items-center gap-2"
-      >
-        ← Retour
-      </button>
-    )}
-
-        </div>
+              {currentStep > 1 && (
+                <button
+                  onClick={handleBack}
+                  className="text-gray-700 hover:text-black font-medium flex items-center gap-2"
+                >
+                  ← Retour
+                </button>
+              )}
+            </div>
             <button
               onClick={onClose}
               className="w-10 h-10 bg-[#E95503] hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors shadow-md"
@@ -323,43 +332,44 @@ Le QR code a été envoyé par email avec un code de vérification pour retrouve
 
           <div className="w-full flex justify-center font-medium text-2xl mb-4">{eventTitle}</div>
           <h2 className='font-bold text-2xl md:text-3xl text-center mb-2'>
-Firthy Chill EPAC</h2>
+            Firthy Chill EPAC
+          </h2>
           <p className="text-sm text-gray-600 font-medium text-center mb-6">
             Réservez en quelques minutes, paiement 100% sécurisé
           </p>
 
           {/* Steps */}
           <div className="w-full overflow-x-auto pb-2">
-          <div className="flex items-center justify-between max-w-lg mx-auto">
-            {steps.map((step, index) => (
-              <div key={step.number} className="flex items-center">
-                <div className="flex flex-col items-center">
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-2xl transition-all shadow-md ${
-                      step.number < currentStep
-                        ? 'bg-green-500 text-white'
-                        : step.number === currentStep
-                        ? 'bg-[#E95503] shadow-[#E95503] shadow-2xl text-white'
-                        : 'bg-gray-200 text-gray-500'
-                    }`}
-                  >
-                    {step.number < currentStep ? <Check className="w-6 h-6" /> : step.number}
+            <div className="flex items-center justify-between max-w-lg mx-auto">
+              {steps.map((step, index) => (
+                <div key={step.number} className="flex items-center">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-2xl transition-all shadow-md ${
+                        step.number < currentStep
+                          ? 'bg-green-500 text-white'
+                          : step.number === currentStep
+                          ? 'bg-[#E95503] shadow-[#E95503] shadow-2xl text-white'
+                          : 'bg-gray-200 text-gray-500'
+                      }`}
+                    >
+                      {step.number < currentStep ? <Check className="w-6 h-6" /> : step.number}
+                    </div>
+                    <span className={`text-xs text-center font-medium whitespace-nowrap ${
+                      step.number <= currentStep ? 'text-gray-900' : 'text-gray-400'
+                    }`}>
+                      {step.label}
+                    </span>
                   </div>
-                  <span className={`text-xs text-center font-medium whitespace-nowrap ${
-                    step.number <= currentStep ? 'text-gray-900' : 'text-gray-400'
-                  }`}>
-                    {step.label}
-                  </span>
+                  
+                  {index < steps.length - 1 && (
+                    <div className={`w-12 sm:w-16 h-1 mx-2 mb-6 transition-all ${
+                      step.number < currentStep ? 'bg-main-gradient' : 'bg-gray-300'
+                    }`} />
+                  )}
                 </div>
-                
-                {index < steps.length - 1 && (
-                  <div className={`w-12 sm:w-16 h-1 mx-2 mb-6 transition-all ${
-                    step.number < currentStep ? 'bg-main-gradient' : 'bg-gray-300'
-                  }`} />
-                )}
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
           </div>
         </div>
 
