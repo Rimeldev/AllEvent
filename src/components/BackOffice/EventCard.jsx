@@ -26,32 +26,36 @@ export default function EventCard({
       {/* Left */}
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
         {/* Image avec badge et favori */}
-        <div className="relative rounded-lg h-48 overflow-hidden">
-          {/* Image floue background */}
-          <div
-            className="absolute inset-0 blur-xs  scale-110"
-            style={{
+        <div className="rounded-xl overflow-hidden w-xs ">
+             <div
+                className="relative h-48 overflow-hidden cursor-pointer"
+              >
+                {/* Image floue background */}
+                <div
+                  className="absolute inset-0 blur-xs  scale-110"
+                  style={{
               backgroundImage: `url(${image})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
-            }}
-          />
+                  }}
+                />
 
-          {/* Overlay sombre pour lisibilité */}
-          <div className="absolute inset-0 bg-white/30" />
+                {/* Overlay sombre pour lisibilité */}
+                <div className="absolute inset-0 bg-white/50" />
 
-          {/* Image principale nette */}
-          <img
-            src={image}
+                {/* Image principale nette */}
+                <img
+                  src={image}
             alt={title}
-            className="relative px-4 mx-auto object-cover z-20"
-          />
+                  className="relative h-48 px-6 mx-auto object-cover z-20"
+                />
 
-          <span className="flex gap-1 absolute top-3 left-3 bg-main-gradient text-white text-xs font-bold px-3 py-1 rounded z-30">
-            <Icon icon="iconamoon:badge-fill" width="16" height="16" />{" "}
-            {category}
-          </span>
-        </div>
+                <span className="flex gap-1 absolute top-3 left-3 bg-main-gradient text-white text-xs font-bold px-3 py-1 rounded z-30">
+                  <Icon icon="iconamoon:badge-fill" width="16" height="16" />{" "}
+                  {category}
+                </span>
+              </div>
+              </div>
         <div className="space-y-1">
           <h3 className="font-bold text-lg mb-4">{title}</h3>
 
@@ -87,7 +91,9 @@ export default function EventCard({
           Statistique
         </button>
 
-        <button className="flex items-center gap-1 px-3 py-1.5 font-semibold text-sm border border-gray-200 shadow-md rounded-md hover:shadow-lg">
+        <button 
+        onClick={() => navigate(`/edit-event/${id}`)}
+        className="flex items-center gap-1 px-3 py-1.5 font-semibold text-sm border border-gray-200 shadow-md rounded-md hover:shadow-lg">
           <Pencil className="w-4 h-4" />
           Modifier
         </button>

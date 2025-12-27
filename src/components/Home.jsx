@@ -184,7 +184,7 @@ const formatDate = (dateString) => {
                 <img
                   src={event.images[0]?.url || ""}
                   alt={event.name}
-                  className="relative mx-auto object-cover z-20 rounded-b-xl"
+                  className="relative h-48 mx-auto object-cover z-20"
                 />
 
                 <span className="flex gap-1 absolute top-3 left-3 bg-main-gradient text-white text-xs font-bold px-3 py-1 rounded z-30">

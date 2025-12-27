@@ -5,6 +5,7 @@ import { getStats } from "../../services/statsService";
 import { toast } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { getAllEvents, getEventAdminById } from "../../services/eventService";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const [statsData, setStatsData] = useState(null);
@@ -12,6 +13,7 @@ export default function Dashboard() {
   const [events, setEvents] = useState([]);
   const [eventLoading, setEventLoading] = useState(true);
   const [eventPrices, setEventPrices] = useState({});
+  const navigate = useNavigate();
 
 
   // Charger les stats au montage
@@ -161,6 +163,7 @@ const formatDate = (dateString) => {
 
   {/* Bouton */}
   <button
+    onClick={() => navigate("/create-event")}
     type="button"
     className="flex items-center justify-center gap-2 py-2.5 px-4 sm:px-6 text-sm sm:text-base text-white font-semibold rounded-lg bg-main-gradient btn-gradient hover:shadow-lg transition-shadow w-full sm:w-auto whitespace-nowrap"
   >

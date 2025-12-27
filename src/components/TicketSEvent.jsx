@@ -163,7 +163,7 @@ export default function TicketSEvent({ tickets = [], eventId, eventTitle, event 
                     >
                       <div className="pt-4 border-t border-gray-200">
                         <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                          {ticket.description || "Aucune description disponible"}
+                          {ticket.description === "true" ? "Aucune description disponible" : ticket.description}
                         </p>
                       </div>
                     </div>

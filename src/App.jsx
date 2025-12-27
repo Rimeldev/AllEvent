@@ -43,7 +43,7 @@ function App() {
             <StatisticPages />
           </ProtectedRoute>
         } />
-        <Route path="/edit-event/:id" element={
+        <Route path="/edit-event/:eventId" element={
           <ProtectedRoute>
             <EditEvent />
           </ProtectedRoute>

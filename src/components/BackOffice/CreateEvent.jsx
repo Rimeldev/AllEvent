@@ -1,16 +1,53 @@
 import EventForm from "./EventForm";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { createEvent } from "../../services/eventService";
+import { createTicket } from "../../services/ticketService";
+import { toast } from "react-hot-toast";
+import { useState } from "react";
 
 export default function CreateEvent() {
   const navigate = useNavigate();
-  const handleCreate = (data) => {
-    console.log("Créer événement", data);
-  };
+  const [loading, setLoading] = useState(false);
+
+const handleCreate = async (formData, tickets) => {
+  try {
+    setLoading(true);
+
+    // 1️⃣ Créer l'événement
+    const eventRes = await createEvent(formData);
+
+    if (!eventRes.success) {
+      throw new Error("Erreur création événement");
+    }
+
+    const eventId = eventRes.data.id;
+
+    // 2️⃣ Créer les tickets
+    for (const ticket of tickets) {
+      await createTicket({
+        event_id: eventId,
+        label: ticket.name,
+        available_places: Number(ticket.places),
+        price: Number(ticket.price),
+        description: ticket.description,
+      });
+    }
+
+    toast.success("Événement et tickets créés avec succès !");
+    navigate("/dashboard");
+
+  } catch (error) {
+    console.error(error);
+    toast.error("Erreur lors de la création complète");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-          {/* Bouton retour */}
+    <div className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-16">
+      {/* Bouton retour */}
       <button
         onClick={() => navigate("/dashboard")}
         className="flex items-start gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium"
@@ -20,13 +57,10 @@ export default function CreateEvent() {
       </button>
       <div className="max-w-3xl mx-auto p-6">
         <h1 className="text-4xl font-extrabold mb-2">Nouvel événement</h1>
-        <p className="text-gray-500 mb-6">
-          Ajouter une nouvelle événement
-        </p>
+        <p className="text-gray-500 mb-6">Ajouter une nouvelle événement</p>
 
-      <EventForm mode="create" onSubmit={handleCreate} />
+        <EventForm mode="create" onSubmit={handleCreate} loading={loading} />
+      </div>
     </div>
-    </div>
-
   );
 }
