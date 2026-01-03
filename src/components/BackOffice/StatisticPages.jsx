@@ -14,6 +14,8 @@ import { useState, useRef, useEffect } from "react";
 import { getEventAdminById } from "../../services/eventService";
 import { getStatsAdmin } from "../../services/statsService";
 import { toast } from "react-hot-toast";
+import { deleteTicket } from "../../services/ticketService";
+
 
 export default function StatisticPages() {
   const navigate = useNavigate();
@@ -28,44 +30,54 @@ export default function StatisticPages() {
   const [eventLoading, setEventLoading] = useState(true);
   const [event, setEvent] = useState(null); // ← Changer [] en null
   const [tickets, setTickets] = useState([]); // ← AJOUTER pour stocker les tickets
+  const [eventTickets, setEventTickets] = useState([]);
 
   // Charger les stats et événements au montage
-  useEffect(() => {
-    if (eventId) {
-      fetchStats();
-      fetchEventDetails();
-    }
-  }, [eventId]);
+ useEffect(() => {
+  if (eventId) fetchEventDetails();
+}, [eventId]);
+
+useEffect(() => {
+  if (event && event.tickets?.length) fetchStats();
+}, [event]);
+
 
   // Fonction pour récupérer les stats de l'événement
   async function fetchStats() {
     try {
-      setLoading(true);
+     
       const res = await getStatsAdmin(eventId); // ← PASSER eventId
       
       if (res.success && res.data) {
         setStatsData(res.data);
         
         // Transformer les données des tickets
-        const ticketsArray = Object.entries(res.data.events || {}).map(([name, data]) => ({
-          id: name,
-          name: name,
-          price: data.price.toLocaleString(),
-          available: data.remaining_places + data.sold + data.eliminated,
-          sold: data.sold,
-          remaining: data.remaining_places,
-          eliminated: data.eliminated,
-          revenue: data.revenue,
-          status: data.remaining_places === 0 ? "finished" : "active"
-        }));
-        
-        setTickets(ticketsArray);
+  const ticketsArray = Object.entries(res.data.events || {}).map(
+  ([name, data]) => {
+    const ticketFromEvent = eventTickets.find(
+      t => t.label === name
+    );
+
+    return {
+      id: ticketFromEvent?.id,
+      name,
+      price: data.price.toLocaleString(),
+      available: data.remaining_places + data.sold + data.eliminated,
+      sold: data.sold,
+      remaining: data.remaining_places,
+      eliminated: data.eliminated,
+      revenue: data.revenue,
+      status: data.remaining_places === 0 ? "finished" : "active"
+    };
+  }
+);
+
+setTickets(ticketsArray);
+
       }
     } catch (error) {
       console.error("Erreur stats:", error);
       toast.error("Impossible de charger les statistiques");
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -73,10 +85,19 @@ export default function StatisticPages() {
   async function fetchEventDetails() {
     try {
       setEventLoading(true);
+       setLoading(true);
+    
       const res = await getEventAdminById(eventId); // ← PASSER eventId
       
       if (res.success && res.data) {
         setEvent(res.data);
+
+        setEventTickets(
+    res.data.tickets.map(ticket => ({
+      id: ticket.id,
+      label: ticket.label
+    }))
+  );
       } else {
         toast.error("Événement introuvable");
       }
@@ -85,8 +106,36 @@ export default function StatisticPages() {
       toast.error("Impossible de charger l'événement");
     } finally {
       setEventLoading(false);
+       setLoading(false);
     }
   }
+
+  async function handleDeleteTicket(ticketId) {
+  if (!confirm("Voulez-vous vraiment supprimer ce ticket ?")) return;
+
+  try {
+    await deleteTicket(ticketId);
+
+    toast.success("Ticket supprimé avec succès");
+
+    // 🔥 Mettre à jour l’UI sans recharger la page
+    setTickets(prev => prev.filter(t => t.id !== ticketId));
+
+  } catch (error) {
+    console.error("Erreur suppression ticket :", error);
+
+    if (error.response?.status === 400) {
+      toast.error("Impossible : des achats sont associés à ce ticket");
+    } else if (error.response?.status === 403) {
+      toast.error("Action non autorisée");
+    } else if (error.response?.status === 404) {
+      toast.error("Ticket introuvable");
+    } else {
+      toast.error("Erreur lors de la suppression");
+    }
+  }
+}
+
 
   // Fonction pour formater les dates
   const formatDate = (dateString) => {
@@ -190,7 +239,7 @@ export default function StatisticPages() {
   return (
     <div className="min-h-screen">
       <section className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-16 mx-auto">
-        <div className="mx-auto flex items-center justify-between mb-8">
+        <div className="mx-auto mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           {/* Bouton retour */}
           <button
             onClick={() => navigate("/dashboard")}
@@ -201,7 +250,7 @@ export default function StatisticPages() {
           </button>
 
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-black">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-black text-center sm:text-right">
               Tableau de bord - {event.name || "Événement"}
             </h1>
           </div>
@@ -338,7 +387,7 @@ export default function StatisticPages() {
               <TicketTierRow
                 key={ticket.id}
                 {...ticket}
-                onMarkFinished={() => console.log("Terminé:", ticket.name)}
+                onMarkFinished={() => handleDeleteTicket(ticket.id)}
               />
             ))
           )}

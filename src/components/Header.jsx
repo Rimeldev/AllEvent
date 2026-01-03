@@ -13,7 +13,8 @@ export default function Header() {
       <div className="max-w-7xl mx-auto flex justify-between items-center px-4 sm:px-6 py-3">
         
         {/* Logo + Titre */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 cursor-pointer"
+        onClick={() => navigate("/")}>
           <img
              src={logo} 
             alt="Logo EPAC"

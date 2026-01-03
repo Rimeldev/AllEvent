@@ -72,6 +72,7 @@ export default function EditEvent() {
     try {
       setLoading(true);
       console.log("🚀 Début modification événement...");
+      
 
       // 1️⃣ Mettre à jour l'événement
       const eventRes = await updateEvent(eventId, formData);
@@ -132,7 +133,7 @@ export default function EditEvent() {
   if (loadingData) {
     return (
       <div className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-16">
-        <div className="max-w-3xl mx-auto p-6 text-center">
+        <div className="max-w-3xl items-center justify-center min-h-screen mx-auto p-6 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Chargement de l'événement...</p>
         </div>

@@ -189,7 +189,7 @@ const formatDate = (dateString) => {
 
                 <span className="flex gap-1 absolute top-3 left-3 bg-main-gradient text-white text-xs font-bold px-3 py-1 rounded z-30">
                   <Icon icon="iconamoon:badge-fill" width="16" height="16" />{" "}
-                  {event.badge || "—"}
+                  {event.badge || "Concert"}
                 </span>
               </div>
 

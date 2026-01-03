@@ -15,3 +15,4 @@ export const updateTicket = async (ticketId, ticketData) => {
 export const deleteTicket = async (ticketId) => {
   return await api.delete(`api/ticket/${ticketId}/delete`).json();
 };
+

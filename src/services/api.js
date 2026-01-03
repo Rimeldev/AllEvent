@@ -1,4 +1,5 @@
 import ky from "ky";
+import { toast } from "react-hot-toast";
 
 const api = ky.create({
   prefixUrl: "https://ticketing.alwaysdata.net",
@@ -20,6 +21,30 @@ const api = ky.create({
         if (!isFormData && !request.headers.has("Content-Type")) {
           request.headers.set("Content-Type", "application/json");
         }
+      }
+    ],
+
+    afterResponse: [
+      async (request, options, response) => {
+        // 🔥 Gérer les 401 Unauthorized
+        if (response.status === 401) {
+          console.warn('🔒 Session expirée ou token invalide');
+          
+          // Supprimer le token
+          localStorage.removeItem("token");
+          
+          // Afficher un message
+          toast.error("Session expirée. Veuillez vous reconnecter.");
+          
+          // Rediriger vers login après un court délai
+          setTimeout(() => {
+            if (!window.location.pathname.includes('/login')) {
+              window.location.href = "/login";
+            }
+          }, 500);
+        }
+        
+        return response;
       }
     ]
   }
