@@ -1,31 +1,15 @@
 import React, { useState } from 'react';
-import { Ticket, Mail, Search, KeyRound } from 'lucide-react';
+import { Ticket, Mail, Search, KeyRound, Loader2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { ticketService } from '../services/ticketServiceUser';
 
 // Composant pour un ticket avec QR code
 const TicketCard = ({ ticket }) => {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4">
-      {/* QR Code */}
-      <div className="flex justify-center mb-3">
-        <div className="w-32 h-32 bg-main-gradient btn-gradient rounded-lg flex items-center justify-center">
-          <div className="w-28 h-28 bg-white rounded flex items-center justify-center">
-            <svg viewBox="0 0 100 100" className="w-24 h-24">
-              {/* QR Code simulé */}
-              <rect x="0" y="0" width="100" height="100" fill="white"/>
-              <rect x="10" y="10" width="15" height="15" fill="black"/>
-              <rect x="75" y="10" width="15" height="15" fill="black"/>
-              <rect x="10" y="75" width="15" height="15" fill="black"/>
-              <rect x="30" y="20" width="5" height="5" fill="black"/>
-              <rect x="40" y="30" width="5" height="5" fill="black"/>
-              <rect x="50" y="40" width="10" height="10" fill="black"/>
-              <rect x="65" y="35" width="5" height="5" fill="black"/>
-              <rect x="35" y="60" width="8" height="8" fill="black"/>
-              <rect x="60" y="65" width="6" height="6" fill="black"/>
-              <rect x="20" y="50" width="7" height="7" fill="black"/>
-              <rect x="70" y="55" width="8" height="8" fill="black"/>
-            </svg>
-          </div>
-        </div>
+      {/* QR Code - à générer selon vos données */}
+      <div className="bg-gray-100 rounded-lg p-4 mb-4 flex items-center justify-center">
+        <div className="text-xs text-gray-500">QR Code</div>
       </div>
       
       {/* Détails du ticket */}
@@ -73,43 +57,94 @@ const TicketCard = ({ ticket }) => {
 export default function MesTickets() {
   const [email, setEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
-  const [hasSearched, setHasSearched] = useState(false);
-  const [ticketsFound, setTicketsFound] = useState(null);
+  const [step, setStep] = useState(1); // 1: email, 2: code
+  const [tickets, setTickets] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Données de démonstration
-  const mockTickets = [
-    {
-      id: 'LOMX1234',
-      email: 'votre.email@example.com',
-      purchaseDate: '5 décembre 2025',
-      passType: 'VIP'
-    },
-    {
-      id: 'LOMX5678',
-      email: 'votre.email@example.com',
-      purchaseDate: '5 décembre 2025',
-      passType: 'PREMIUM'
-    },
-    {
-      id: 'LOMX9012',
-      email: 'votre.email@example.com',
-      purchaseDate: '5 décembre 2025',
-      passType: 'MTN'
+  // Étape 1 : Envoyer l'email pour recevoir le code
+  const handleRequestCode = async (e) => {
+    e.preventDefault();
+    
+    if (!email.trim()) {
+      toast.error('Veuillez entrer votre adresse email');
+      return;
     }
-  ];
 
-  const handleSearch = () => {
-    setHasSearched(true);
-    // Simulation : si code de vérification rempli, afficher les tickets
-    if (verificationCode.trim()) {
-      setTicketsFound(mockTickets);
-    } else {
-      setTicketsFound(null);
+    // Validation basique de l'email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error('Veuillez entrer une adresse email valide');
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      await ticketService.requestVerificationCode(email);
+      toast.success('Code de vérification envoyé par email !');
+      setStep(2); // Passer à l'étape de saisie du code
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi du code:', error);
+      
+      if (error.response) {
+        const errorData = await error.response.json().catch(() => ({}));
+        toast.error(errorData.message || 'Erreur lors de l\'envoi du code');
+      } else {
+        toast.error('Erreur de connexion. Veuillez réessayer.');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // Étape 2 : Récupérer les tickets avec le code
+  const handleGetTickets = async (e) => {
+    e.preventDefault();
+    
+    if (!verificationCode.trim()) {
+      toast.error('Veuillez entrer le code de vérification');
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const response = await ticketService.getAllTickets(email, verificationCode);
+      
+      if (response && response.tickets && response.tickets.length > 0) {
+        setTickets(response.tickets);
+        toast.success(`${response.tickets.length} ticket(s) trouvé(s) !`);
+      } else {
+        setTickets([]);
+        toast.info('Aucun ticket trouvé pour cet email');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des tickets:', error);
+      
+      if (error.response) {
+        const errorData = await error.response.json().catch(() => ({}));
+        
+        if (error.response.status === 401 || error.response.status === 403) {
+          toast.error('Code de vérification invalide');
+        } else {
+          toast.error(errorData.message || 'Erreur lors de la récupération des tickets');
+        }
+      } else {
+        toast.error('Erreur de connexion. Veuillez réessayer.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReset = () => {
+    setEmail('');
+    setVerificationCode('');
+    setStep(1);
+    setTickets(null);
+  };
+
   const handleRediscover = () => {
-    // Rediriger vers l'accueil ou actualiser
     window.location.href = '/';
   };
 
@@ -130,63 +165,117 @@ export default function MesTickets() {
         </div>
 
         {/* Formulaire de recherche */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-base font-semibold text-gray-900 mb-4">
-            Rechercher mes tickets
-          </h2>
-          <p className="text-xs text-gray-500 mb-4">
-            Entrez l'adresse email utilisée lors de l'achat et le code de vérification reçu.
-          </p>
+        {tickets === null && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h2 className="text-base font-semibold text-gray-900 mb-4">
+              {step === 1 ? 'Rechercher mes tickets' : 'Entrer le code de vérification'}
+            </h2>
+            
+            {step === 1 ? (
+              <form onSubmit={handleRequestCode}>
+                <p className="text-xs text-gray-500 mb-4">
+                  Entrez l'adresse email utilisée lors de l'achat. Nous vous enverrons un code de vérification.
+                </p>
 
-          <div className="space-y-4">
-            {/* Adresse email */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Adresse email
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="votre.email@example.com"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
-                />
-              </div>
-            </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Adresse email
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="votre.email@example.com"
+                        disabled={isLoading}
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
 
-            {/* Code de vérification */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Code de vérification
-              </label>
-              <div className="relative">
-                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
-                />
-              </div>
-            </div>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-main-gradient btn-gradient text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Envoi en cours...
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="w-4 h-4" />
+                        Recevoir le code
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleGetTickets}>
+                <p className="text-xs text-gray-500 mb-4">
+                  Un code de vérification a été envoyé à{' '}
+                  <span className="font-medium text-gray-900">{email}</span>.
+                  Vérifiez votre boîte de réception.
+                </p>
 
-            {/* Bouton Rechercher */}
-            <button
-              onClick={handleSearch}
-              className="w-full bg-main-gradient btn-gradient text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
-            >
-              <Search className="w-4 h-4" />
-              Rechercher
-            </button>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Code de vérification
+                    </label>
+                    <div className="relative">
+                      <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value)}
+                        placeholder="Entrez le code reçu"
+                        disabled={isLoading}
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-main-gradient btn-gradient text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Vérification...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="w-4 h-4" />
+                        Rechercher
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    disabled={isLoading}
+                    className="w-full text-sm text-gray-600 hover:text-gray-900 transition-colors disabled:opacity-50"
+                  >
+                    ← Changer d'adresse email
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
-        </div>
+        )}
 
         {/* Résultats */}
-        {hasSearched && (
+        {tickets !== null && (
           <>
-            {ticketsFound ? (
+            {tickets.length > 0 ? (
               /* Tickets trouvés */
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <div className="text-center mb-6">
@@ -194,17 +283,17 @@ export default function MesTickets() {
                     <Ticket className="w-6 h-6 text-green-600" />
                   </div>
                   <h2 className="text-lg font-bold text-gray-900 mb-1">
-                    Ticket trouvé
+                    Tickets trouvés
                   </h2>
                   <p className="text-sm text-gray-600">
-                    {ticketsFound.length} tickets enregistrés
+                    {tickets.length} ticket{tickets.length > 1 ? 's' : ''} enregistré{tickets.length > 1 ? 's' : ''}
                   </p>
                 </div>
 
                 {/* Grille de tickets */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                  {ticketsFound.map((ticket, index) => (
-                    <TicketCard key={index} ticket={ticket} />
+                  {tickets.map((ticket, index) => (
+                    <TicketCard key={ticket.id || index} ticket={ticket} />
                   ))}
                 </div>
 
@@ -232,6 +321,13 @@ export default function MesTickets() {
                     <li>• Conservez votre code de vérification pour retrouver vos tickets ultérieurement</li>
                   </ul>
                 </div>
+
+                <button
+                  onClick={handleReset}
+                  className="w-full mt-4 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  Rechercher d'autres tickets
+                </button>
               </div>
             ) : (
               /* Aucun ticket trouvé */
@@ -244,16 +340,22 @@ export default function MesTickets() {
                 </h2>
                 <p className="text-sm text-gray-600 mb-6">
                   Aucun ticket n'a été trouvé pour l'adresse{' '}
-                  <span className="font-medium text-gray-900">
-                    votre.email@example.com
-                  </span>
+                  <span className="font-medium text-gray-900">{email}</span>
                 </p>
-                <button
-                  onClick={handleRediscover}
-                  className="bg-main-gradient btn-gradient text-white font-semibold py-2.5 px-6 rounded-lg transition-all duration-200"
-                >
-                  Découvrir les évènements
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={handleReset}
+                    className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-2.5 px-6 rounded-lg transition-all duration-200"
+                  >
+                    Réessayer
+                  </button>
+                  <button
+                    onClick={handleRediscover}
+                    className="bg-main-gradient btn-gradient text-white font-semibold py-2.5 px-6 rounded-lg transition-all duration-200"
+                  >
+                    Découvrir les événements
+                  </button>
+                </div>
               </div>
             )}
           </>

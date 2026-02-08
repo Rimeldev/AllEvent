@@ -20,6 +20,7 @@ import StatisticPages from "./components/BackOffice/StatisticPages";
 import EditEvent from "./components/BackOffice/EditEvent";
 import CreateEvent from "./components/BackOffice/CreateEvent";
 import AdminAccount from "./components/BackOffice/AdminAccount";
+import QRScanner from './components/BackOffice/QRScanner';
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
           <Route path="/edit-event/:eventId" element={<EditEvent />} />
           <Route path="/create-event" element={<CreateEvent />} />
           <Route path="/admin/account" element={<AdminAccount />} />
+          <Route path="/qr-scanner" element={<QRScanner />} />
         </Route>
 
       </Routes>

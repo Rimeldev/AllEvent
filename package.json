@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.17",
+    "fernet": "^0.3.3",
+    "html5-qrcode": "^2.3.8",
+    "kkiapay-react": "^0.0.7",
     "ky": "^1.14.1",
     "lucide-react": "^0.556.0",
     "react": "^19.2.0",

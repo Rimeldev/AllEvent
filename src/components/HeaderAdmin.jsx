@@ -32,7 +32,7 @@ export default function Header() {
           {/* Bouton Tickets (public seulement) */}
    
             <button
-              onClick={() => navigate("/tickets")}
+              onClick={() => navigate("/qr-scanner")}
               className="flex items-center gap-2 bg-[#E95503] text-white px-4 py-2 rounded-xl hover:scale-105 transition"
             >
               <Ticket size={18} />
