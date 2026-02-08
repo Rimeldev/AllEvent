@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Ticket, CheckCircle, XCircle, Loader2, Camera } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -12,6 +12,10 @@ export default function QRScanner() {
   const [verificationResult, setVerificationResult] = useState(null);
   const [scanner, setScanner] = useState(null);
   const [cameraError, setCameraError] = useState(null);
+  
+  // Utiliser un ref pour éviter les scans multiples
+  const isProcessing = useRef(false);
+  const lastScannedCode = useRef(null);
 
   useEffect(() => {
     startScanner();
@@ -69,6 +73,7 @@ export default function QRScanner() {
     if (scanner && isScanning) {
       try {
         await scanner.stop();
+        await scanner.clear();
         setIsScanning(false);
       } catch (error) {
         console.error("Erreur lors de l'arrêt du scanner:", error);
@@ -77,9 +82,25 @@ export default function QRScanner() {
   };
 
   const onScanSuccess = async (decodedText, decodedResult) => {
+    // Vérifier si on est déjà en train de traiter un scan
+    if (isProcessing.current) {
+      console.log("Scan en cours de traitement, ignoré");
+      return;
+    }
+
+    // Vérifier si c'est le même code que le dernier scanné
+    if (lastScannedCode.current === decodedText) {
+      console.log("Code déjà scanné, ignoré");
+      return;
+    }
+
     console.log("QR Code scanné:", decodedText);
     
-    // Arrêter le scanner temporairement
+    // Marquer comme en traitement
+    isProcessing.current = true;
+    lastScannedCode.current = decodedText;
+    
+    // Arrêter le scanner immédiatement
     await stopScanner();
 
     // Vérifier le ticket
@@ -104,7 +125,10 @@ export default function QRScanner() {
         qrId: qrId
       });
 
-      toast.success('Ticket valide !');
+      toast.success('Ticket valide !', {
+        duration: 3000,
+        position: 'top-center',
+      });
       
       // Jouer un son de succès (optionnel)
       playSuccessSound();
@@ -134,12 +158,16 @@ export default function QRScanner() {
         qrId: qrId
       });
 
-      toast.error(errorMessage);
+      toast.error(errorMessage, {
+        duration: 3000,
+        position: 'top-center',
+      });
       
       // Jouer un son d'erreur (optionnel)
       playErrorSound();
     } finally {
       setIsVerifying(false);
+      isProcessing.current = false;
     }
   };
 
@@ -155,6 +183,8 @@ export default function QRScanner() {
 
   const resetScanner = async () => {
     setVerificationResult(null);
+    isProcessing.current = false;
+    lastScannedCode.current = null;
     await startScanner();
   };
 
@@ -190,7 +220,7 @@ export default function QRScanner() {
             )}
 
             {/* Scanner QR Code */}
-            <div id="qr-reader" className="w-full rounded-lg overflow-hidden"></div>
+            {!isVerifying && <div id="qr-reader" className="w-full rounded-lg overflow-hidden"></div>}
 
             {isVerifying && (
               <div className="flex flex-col items-center justify-center py-8">
@@ -202,7 +232,8 @@ export default function QRScanner() {
             <div className="mt-4 text-center">
               <button
                 onClick={handleBack}
-                className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                disabled={isVerifying}
+                className="text-sm text-gray-600 hover:text-gray-900 transition-colors disabled:opacity-50"
               >
                 ← Retour au tableau de bord
               </button>
@@ -321,17 +352,19 @@ export default function QRScanner() {
         )}
 
         {/* Instructions */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-blue-900 mb-2">
-            Instructions
-          </h3>
-          <ul className="text-xs text-blue-800 space-y-1">
-            <li>• Placez le QR code du ticket face à la caméra</li>
-            <li>• Assurez-vous d'avoir un bon éclairage</li>
-            <li>• Le scan se fera automatiquement</li>
-            <li>• Autorisez l'accès à la caméra si demandé</li>
-          </ul>
-        </div>
+        {!verificationResult && (
+          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-blue-900 mb-2">
+              Instructions
+            </h3>
+            <ul className="text-xs text-blue-800 space-y-1">
+              <li>• Placez le QR code du ticket face à la caméra</li>
+              <li>• Assurez-vous d'avoir un bon éclairage</li>
+              <li>• Le scan se fera automatiquement</li>
+              <li>• Autorisez l'accès à la caméra si demandé</li>
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
