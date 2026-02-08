@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { Ticket, CheckCircle, XCircle, Loader2, Camera } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -7,44 +7,80 @@ import { ticketService } from '../../services/ticketServiceUser';
 
 export default function QRScanner() {
   const navigate = useNavigate();
-  const [isScanning, setIsScanning] = useState(true);
+  const [isScanning, setIsScanning] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState(null);
   const [scanner, setScanner] = useState(null);
+  const [cameraError, setCameraError] = useState(null);
 
   useEffect(() => {
-    // Initialiser le scanner
-    const html5QrcodeScanner = new Html5QrcodeScanner(
-      "qr-reader",
-      { 
-        fps: 10, 
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0
-      },
-      false
-    );
-
-    html5QrcodeScanner.render(onScanSuccess, onScanError);
-    setScanner(html5QrcodeScanner);
+    startScanner();
 
     // Cleanup
     return () => {
-      if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear().catch(error => {
-          console.error("Erreur lors du nettoyage du scanner:", error);
-        });
-      }
+      stopScanner();
     };
   }, []);
+
+  const startScanner = async () => {
+    try {
+      const html5QrCode = new Html5Qrcode("qr-reader");
+      setScanner(html5QrCode);
+
+      // Obtenir les caméras disponibles
+      const cameras = await Html5Qrcode.getCameras();
+      
+      if (cameras && cameras.length > 0) {
+        // Préférer la caméra arrière (environment) si disponible
+        const backCamera = cameras.find(camera => 
+          camera.label.toLowerCase().includes('back') || 
+          camera.label.toLowerCase().includes('rear') ||
+          camera.label.toLowerCase().includes('environment')
+        );
+        
+        const cameraId = backCamera ? backCamera.id : cameras[0].id;
+
+        // Démarrer le scanner avec la caméra
+        await html5QrCode.start(
+          cameraId,
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0
+          },
+          onScanSuccess,
+          onScanError
+        );
+
+        setIsScanning(true);
+        setCameraError(null);
+      } else {
+        setCameraError("Aucune caméra détectée sur cet appareil");
+        toast.error("Aucune caméra disponible");
+      }
+    } catch (error) {
+      console.error("Erreur lors du démarrage du scanner:", error);
+      setCameraError("Impossible d'accéder à la caméra. Vérifiez les permissions.");
+      toast.error("Erreur d'accès à la caméra");
+    }
+  };
+
+  const stopScanner = async () => {
+    if (scanner && isScanning) {
+      try {
+        await scanner.stop();
+        setIsScanning(false);
+      } catch (error) {
+        console.error("Erreur lors de l'arrêt du scanner:", error);
+      }
+    }
+  };
 
   const onScanSuccess = async (decodedText, decodedResult) => {
     console.log("QR Code scanné:", decodedText);
     
     // Arrêter le scanner temporairement
-    setIsScanning(false);
-    if (scanner) {
-      scanner.pause();
-    }
+    await stopScanner();
 
     // Vérifier le ticket
     await verifyTicket(decodedText);
@@ -117,15 +153,13 @@ export default function QRScanner() {
     audio.play().catch(e => console.log('Impossible de jouer le son'));
   };
 
-  const resetScanner = () => {
+  const resetScanner = async () => {
     setVerificationResult(null);
-    setIsScanning(true);
-    if (scanner) {
-      scanner.resume();
-    }
+    await startScanner();
   };
 
-  const handleBack = () => {
+  const handleBack = async () => {
+    await stopScanner();
     navigate('/dashboard');
   };
 
@@ -148,8 +182,15 @@ export default function QRScanner() {
         {/* Zone de scan ou résultat */}
         {!verificationResult ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            {/* Erreur caméra */}
+            {cameraError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                <p className="text-sm text-red-800">{cameraError}</p>
+              </div>
+            )}
+
             {/* Scanner QR Code */}
-            <div id="qr-reader" className="w-full"></div>
+            <div id="qr-reader" className="w-full rounded-lg overflow-hidden"></div>
 
             {isVerifying && (
               <div className="flex flex-col items-center justify-center py-8">
