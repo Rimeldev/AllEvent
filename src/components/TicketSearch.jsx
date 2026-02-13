@@ -7,21 +7,35 @@ import { ticketService } from '../services/ticketServiceUser';
 const TicketCard = ({ ticket }) => {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4">
-      {/* QR Code - à générer selon vos données */}
-      <div className="bg-gray-100 rounded-lg p-4 mb-4 flex items-center justify-center">
-        <div className="text-xs text-gray-500">QR Code</div>
-      </div>
       
+      {/* QR Code (image base64) */}
+      {ticket.qr_code && (
+        <div className="mb-4 flex items-center justify-center">
+          <img
+            src={`data:image/png;base64,${ticket.qr_code}`}
+            alt="QR Code"
+            className="w-40 h-40 object-contain"
+          />
+        </div>
+      )}
+
       {/* Détails du ticket */}
       <div className="space-y-2 text-sm">
+
+        {/* Nom complet */}
         <div className="flex items-start gap-2">
-          <Ticket className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
+          <svg className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
           <div className="flex-1">
-            <p className="text-xs text-gray-500">Ticket</p>
-            <p className="font-semibold text-gray-900">{ticket.id}</p>
+            <p className="text-xs text-gray-500">Nom</p>
+            <p className="font-medium text-gray-900">
+              {ticket.firstname} {ticket.lastname}
+            </p>
           </div>
         </div>
-        
+
+        {/* Email */}
         <div className="flex items-start gap-2">
           <Mail className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
@@ -29,30 +43,60 @@ const TicketCard = ({ ticket }) => {
             <p className="font-medium text-gray-900 break-all">{ticket.email}</p>
           </div>
         </div>
-        
+
+        {/* Date d'achat */}
         <div className="flex items-start gap-2">
           <svg className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div className="flex-1">
             <p className="text-xs text-gray-500">Date d'achat</p>
-            <p className="font-medium text-gray-900">{ticket.purchaseDate}</p>
+            <p className="font-medium text-gray-900">
+              {new Date(ticket.created_at).toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+              })}
+            </p>
           </div>
         </div>
-        
+
+        {/* Nombre de places */}
         <div className="flex items-start gap-2">
           <svg className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
           <div className="flex-1">
-            <p className="text-xs text-gray-500">Pass</p>
-            <p className="font-semibold text-gray-900">{ticket.passType}</p>
+            <p className="text-xs text-gray-500">Nombre de places</p>
+            <p className="font-semibold text-gray-900">{ticket.number}</p>
           </div>
         </div>
+
+        {/* Méthode de paiement */}
+        <div className="flex items-start gap-2">
+          <svg className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+          </svg>
+          <div className="flex-1">
+            <p className="text-xs text-gray-500">Paiement</p>
+            <p className="font-medium text-gray-900">{ticket.payment_method}</p>
+          </div>
+        </div>
+
+        {/* Statut du ticket */}
+        <div className={`mt-2 px-3 py-1 rounded-full text-xs font-semibold text-center ${
+          ticket.scanned 
+            ? 'bg-red-100 text-red-700' 
+            : 'bg-green-100 text-green-700'
+        }`}>
+          {ticket.scanned ? '✗ Ticket déjà utilisé' : '✓ Ticket valide'}
+        </div>
+
       </div>
     </div>
   );
 };
+
 
 export default function MesTickets() {
   const [email, setEmail] = useState('');
@@ -99,43 +143,51 @@ export default function MesTickets() {
 
   // Étape 2 : Récupérer les tickets avec le code
   const handleGetTickets = async (e) => {
-    e.preventDefault();
-    
-    if (!verificationCode.trim()) {
-      toast.error('Veuillez entrer le code de vérification');
-      return;
-    }
+  e.preventDefault();
+  
+  if (!verificationCode.trim()) {
+    toast.error('Veuillez entrer le code de vérification');
+    return;
+  }
 
-    setIsLoading(true);
+  setIsLoading(true);
+  
+  try {
+    const response = await ticketService.getAllTickets(email, verificationCode);
+    console.log('Réponse tickets:', response);
     
-    try {
-      const response = await ticketService.getAllTickets(email, verificationCode);
-      
-      if (response && response.tickets && response.tickets.length > 0) {
-        setTickets(response.tickets);
-        toast.success(`${response.tickets.length} ticket(s) trouvé(s) !`);
-      } else {
-        setTickets([]);
-        toast.info('Aucun ticket trouvé pour cet email');
-      }
-    } catch (error) {
-      console.error('Erreur lors de la récupération des tickets:', error);
-      
-      if (error.response) {
-        const errorData = await error.response.json().catch(() => ({}));
-        
-        if (error.response.status === 401 || error.response.status === 403) {
-          toast.error('Code de vérification invalide');
-        } else {
-          toast.error(errorData.message || 'Erreur lors de la récupération des tickets');
-        }
-      } else {
-        toast.error('Erreur de connexion. Veuillez réessayer.');
-      }
-    } finally {
-      setIsLoading(false);
+    // ✅ Adapter selon la structure réelle de votre API
+    // response.data.purchases_data est le tableau de tickets
+    const ticketsData = response?.data?.purchases_data;
+    
+    if (ticketsData && Array.isArray(ticketsData) && ticketsData.length > 0) {
+      setTickets(ticketsData);
+      toast.success(`${ticketsData.length} ticket(s) trouvé(s) !`);
+    } else {
+      setTickets([]);
+      toast('Aucun ticket trouvé pour cet email', { icon: 'ℹ️' });
     }
-  };
+  } catch (error) {
+    console.error('Erreur lors de la récupération des tickets:', error);
+    
+    if (error.response) {
+      const errorData = await error.response.json().catch(() => ({}));
+      
+      if (error.response.status === 401 || error.response.status === 403) {
+        toast.error('Code de vérification invalide ou expiré');
+      } else if (error.response.status === 404) {
+        setTickets([]);
+        toast('Aucun ticket trouvé pour cet email', { icon: 'ℹ️' });
+      } else {
+        toast.error(errorData.message || 'Erreur lors de la récupération des tickets');
+      }
+    } else {
+      toast.error('Erreur de connexion. Veuillez réessayer.');
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleReset = () => {
     setEmail('');
@@ -147,6 +199,32 @@ export default function MesTickets() {
   const handleRediscover = () => {
     window.location.href = '/';
   };
+
+  // Ajouter cette fonction dans votre composant TicketSearch.jsx
+
+const handleDownloadQRCodes = () => {
+  if (!tickets || tickets.length === 0) return;
+
+  // Option 1 : Télécharger chaque QR code individuellement
+  tickets.forEach((ticket, index) => {
+    if (ticket.qr_code) {
+      // Créer un lien de téléchargement
+      const link = document.createElement('a');
+      link.href = `data:image/png;base64,${ticket.qr_code}`;
+      link.download = `ticket-${ticket.transaction_id || index + 1}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Petit délai entre chaque téléchargement pour éviter le blocage du navigateur
+      if (index < tickets.length - 1) {
+        setTimeout(() => {}, 100);
+      }
+    }
+  });
+
+  toast.success(`${tickets.length} QR code(s) téléchargé(s) !`);
+};
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -299,8 +377,8 @@ export default function MesTickets() {
 
                 {/* Boutons d'action */}
                 <div className="flex flex-col sm:flex-row gap-3">
-                  <button className="flex-1 bg-main-gradient btn-gradient text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-200">
-                    Télécharger les QR Codes
+                  <button onClick={handleDownloadQRCodes} className="flex-1 bg-main-gradient btn-gradient text-white font-semibold py-2.5 px-4 rounded-lg transition-all duration-200">
+                    Télécharger le QR Code
                   </button>
                   <button
                     onClick={handleRediscover}

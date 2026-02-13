@@ -5,7 +5,6 @@ import { useKKiaPay } from "kkiapay-react";
 import { useEffect } from "react";
 import { encryptData } from "./encryption";
 import { buildPaymentPayload } from "./paymentPayload";
-import logo from "../assets/logo/logo.png";
 
 
 export default function TicketPurchaseModal({
@@ -52,7 +51,7 @@ const launchPayment = async () => {
 
     const payload = buildPaymentPayload({
       itemsArray,
-      purchase_item_logo: logo
+      purchase_item_logo: "https://drive.google.com/file/d/1s7tCfN73oSli3YQZv2rajwH0-1KOMYX3/view?usp=sharing"
     });
 
     const encryptedData = await encryptData(
